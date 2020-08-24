@@ -5,7 +5,8 @@
     <Authors>Mirko Eberlein</Authors>
     <Company>WebGate Consulting AG</Company>
     <Description>Class Libary to have quick Access to Microsoft Dynamics Data. WGCDynamics gives you the ability to create a Connector and Fetch Date from or write Data into Dynamics.</Description>
-    <PackageLicenseExpression>Apache License 2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>WebGate Consulting AG</Copyright>
   </PropertyGroup>
 
