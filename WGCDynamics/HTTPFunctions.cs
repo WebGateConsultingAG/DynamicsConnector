@@ -24,7 +24,7 @@ using System.Net.Mime;
 
 namespace WGCDynamics
 {
-    public class HTTPFunctions
+    public static class HttpFunctions
     {
         public static async Task<T> GetAsync<T>(HttpClient client, string path)
         {
@@ -33,7 +33,6 @@ namespace WGCDynamics
             
             if (response.IsSuccessStatusCode)
             {
-                //Console.WriteLine(await response.Content.ReadAsStringAsync());
                 using Stream responseStream = await response.Content.ReadAsStreamAsync();
                 return JsonConvert.DeserializeObject<T>(new StreamReader(responseStream).ReadToEnd());
             }

@@ -59,15 +59,14 @@ namespace DynamicsConnectorUnitTest
         [TestMethod]
         public void TestSingleSelect()
         {
-            SystemUser emptyUser = new SystemUser();
             DynamicsQuery query = new DynamicsQuery()
             {
                 Table = DynamicsTables.Systemuser,
                 Key = "test",
                 Fields = new List<string>(){
-                    nameof(emptyUser.firstname),
-                    nameof(emptyUser.lastname),
-                    nameof(emptyUser.address1_city)
+                    nameof(SystemUser.firstname),
+                    nameof(SystemUser.lastname),
+                    nameof(SystemUser.address1_city)
                 }
                 
             };
@@ -94,21 +93,20 @@ namespace DynamicsConnectorUnitTest
         [TestMethod]
         public void TestFilter()
         {
-            SystemUser emptyUser = new SystemUser();
             DynamicsQuery query = new DynamicsQuery()
             {
                 Table = DynamicsTables.Systemuser,
                 Filters = new List<Filter>() {
                     new Filter()
                     {
-                        Field = nameof(emptyUser.firstname),
+                        Field = nameof(SystemUser.firstname),
                         Operator = FilterOperator.EqualsOperator,
                         Value = "Mirko"
                     },
                     new Filter{
-                        Field = nameof(emptyUser.lastname),
+                        Field = nameof(SystemUser.address1_addresstypecode),
                         Operator = FilterOperator.EqualsOperator,
-                        Value = "Eberlein",
+                        Value = 1,
                         GlobalOperator = FilterOperator.Or
                         
                     }
@@ -116,7 +114,34 @@ namespace DynamicsConnectorUnitTest
                 Top = 5
             };
             Console.WriteLine(query.GetPath());
-            Assert.IsTrue(query.GetPath().Equals("systemusers?$filter=firstname eq 'Mirko' or lastname eq 'Eberlein'&$top=5"));
+            Assert.IsTrue(query.GetPath().Equals("systemusers?$filter=firstname eq 'Mirko' or address1_addresstypecode eq 1&$top=5"));
+        }
+
+
+        /// <summary>
+        /// check for the right syntax for expand
+        /// </summary>
+        [TestMethod]
+        public void ExpandFilter()
+        {
+            DynamicsQuery query = new DynamicsQuery
+            {
+                Table = DynamicsTables.Contact,
+                Key = "contactId",
+                Fields = new List<string>() {
+                    nameof(Contact.firstname),
+                    nameof(Contact.lastname)
+                },
+                Expand = new DynamicsQuery
+                {
+                    Key = nameof(Contact.owninguser),
+                    Fields = new List<string>() {
+                        nameof(SystemUser.firstname)
+                    }
+                }
+            };
+            Console.WriteLine(query.GetPath());
+            Assert.IsTrue(query.GetPath().Equals("contacts(contactId)?$select=firstname,lastname&$expand=owninguser($select=firstname)"));
         }
 
     }

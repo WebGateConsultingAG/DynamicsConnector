@@ -17,17 +17,17 @@
 
 namespace WGCDynamics
 {
-    public class FilterOperator
+    public static class FilterOperator
     {
-        public static string EqualsOperator = "eq";
-        public static string InOperator = "in";
-        public static string NotEquals = "ne";
-        public static string GreaterThan = "gt";
-        public static string GreaterThanOrEquals = "ge";
-        public static string LessThan = "lt";
-        public static string LessThanOrEquals = "le";
-        public static string And = "and";
-        public static string Or = "or";
-        public static string Not = "not";
+        public readonly static string EqualsOperator = "eq";
+        public readonly static string InOperator = "in";
+        public readonly static string NotEquals = "ne";
+        public readonly static string GreaterThan = "gt";
+        public readonly static string GreaterThanOrEquals = "ge";
+        public readonly static string LessThan = "lt";
+        public readonly static string LessThanOrEquals = "le";
+        public readonly static string And = "and";
+        public readonly static string Or = "or";
+        public readonly static string Not = "not";
     }
 }
