@@ -17,7 +17,7 @@
 
 namespace WGCDynamics
 {
-    public class DynamicsTables
+    public static class DynamicsTables
     {
         public readonly static string Account = "accounts";
         public readonly static string Accountleads = "accountleadscollection";

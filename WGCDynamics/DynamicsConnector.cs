@@ -25,7 +25,6 @@ namespace WGCDynamics
     public class DynamicsConnector
     {
         private static readonly string APIPATH = "/api/data/v9.0/";
-        private string token;
         private readonly string resource;
         private readonly string tenant;
         private readonly string applicationSecret;
@@ -37,18 +36,15 @@ namespace WGCDynamics
             applicationSecret = builder.ApplicationSecret;
             applicationId = builder.ApplicationId;
             client = new HttpClient { BaseAddress = new Uri(resource + APIPATH) };
-            bool Result = ReciveToken().GetAwaiter().GetResult();
-            Console.WriteLine("Finished");
+            ReciveToken().GetAwaiter().GetResult();
         }
 
         public async Task<bool> ReciveToken()
         {
-            Console.WriteLine("Token START");
             ClientCredential credentials = new ClientCredential(applicationId, applicationSecret);
             var authContext = new AuthenticationContext(tenant);
             var result = await authContext.AcquireTokenAsync(resource, credentials);
-            token = result.AccessToken;
-            Console.WriteLine("Token End: " + token);
+            string token = result.AccessToken;
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return true;
         }

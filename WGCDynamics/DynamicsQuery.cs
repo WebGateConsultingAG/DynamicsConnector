@@ -15,7 +15,8 @@
  *
  */
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
+
 namespace WGCDynamics
 {
     public class DynamicsQuery
@@ -54,12 +55,12 @@ namespace WGCDynamics
             {
                 path += "(" + Key + ")";
             }
-            if (Fields != null && Fields.Count() > 0)
+            if (Fields != null && Fields.Count > 0)
             {
                 path += QuestionMarkOrAnd(path);
                 path += GetSelect(Fields);
             }
-            if (Filters != null && Filters.Count() > 0)
+            if (Filters != null && Filters.Count > 0)
             {
                 path += QuestionMarkOrAnd(path);
                 path += GetFilter();
@@ -82,12 +83,13 @@ namespace WGCDynamics
 
         private string GetExpand()
         {
-            string expandText = "$expand=" + Expand.Key;
+            StringBuilder expandBuilder = new StringBuilder("$expand=");
+            expandBuilder.Append(Expand.Key);
             if (Expand.Fields != null && Expand.Fields.Count > 0)
             {
-                expandText += "(" + GetSelect(Expand.Fields) + ")";
+                expandBuilder.Append("(" + GetSelect(Expand.Fields) + ")");
             }
-            return expandText;
+            return expandBuilder.ToString();
         }
 
         private string QuestionMarkOrAnd(string path)
@@ -97,18 +99,18 @@ namespace WGCDynamics
 
         private string GetFilter()
         {
-            string filterText = "$filter=";
+            StringBuilder filterBuilder = new StringBuilder("$filter=");
             int count = 0;
             foreach (Filter filter in Filters)
             {
                 if (count > 0)
                 {
-                    filterText += " " + filter.GlobalOperator + " ";
+                    filterBuilder.Append(" " + filter.GlobalOperator + " ");
                 }
-                filterText += filter.Field + " " + filter.Operator + " " + GetFilterValue(filter.Value);
+                filterBuilder.Append(filter.Field + " " + filter.Operator + " " + GetFilterValue(filter.Value));
                 count++;
             }
-            return filterText;
+            return filterBuilder.ToString();
         }
 
         private object GetFilterValue(object value)
@@ -127,18 +129,18 @@ namespace WGCDynamics
 
         private string GetSelect(ICollection<string> Fields)
         {
-            string select = "$select=";
+            StringBuilder selectBuilder = new StringBuilder("$select=");
             int count = 0;
             foreach (string field in Fields)
             {
                 if (count > 0)
                 {
-                    select += ",";
+                    selectBuilder.Append(",");
                 }
-                select += field;
+                selectBuilder.Append(field);
                 count++;
             }
-            return select;
+            return selectBuilder.ToString();
         }
     }
 
