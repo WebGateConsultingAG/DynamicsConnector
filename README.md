@@ -1,3 +1,3 @@
 # DynamicsConnector
 
-Code Quality Check SonarCloud.io
+## Code Quality Check SonarCloud.io
