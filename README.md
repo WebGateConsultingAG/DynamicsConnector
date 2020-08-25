@@ -1,1 +1,2 @@
 # DynamicsConnector
+Readme content
