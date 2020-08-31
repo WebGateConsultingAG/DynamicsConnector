@@ -14,6 +14,7 @@
  * permissions and limitations under the License.
  *
  */
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -43,6 +44,10 @@ namespace WGCDynamics
         /// Expand your query to an relation 
         /// </summary>
         public DynamicsQuery Expand { get; set; }
+        /// <summary>
+        /// if you want an association insert here the assciationtitle
+        /// </summary>
+        public string Association { get; set; }
 
         /// <summary>
         /// Build the ograph Path from all given Variables
@@ -53,8 +58,9 @@ namespace WGCDynamics
             string path = Table;
             if (Key != null && Key.Length > 0)
             {
-                path += "(" + Key + ")";
+                path += "(" + Key + ")" + (Association != null ? "/" + Association : "");
             }
+
             if (Fields != null && Fields.Count > 0)
             {
                 path += QuestionMarkOrAnd(path);
