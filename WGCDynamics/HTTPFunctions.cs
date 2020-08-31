@@ -21,6 +21,9 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Text;
 using System.Net.Mime;
+using System.Net.Http.Headers;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WGCDynamics
 {
@@ -39,6 +42,7 @@ namespace WGCDynamics
             else
             {
                 Console.WriteLine(response);
+                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
             }
             return obj;
         }
@@ -53,13 +57,38 @@ namespace WGCDynamics
                 using Stream responseStream = await response.Content.ReadAsStreamAsync();
                 return JsonConvert.DeserializeObject<T>(new StreamReader(responseStream).ReadToEnd());
             }
+            else {
+                Console.WriteLine(response);
+                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+            }
             return obj;
         }
 
-        public static async Task<T> PatchAsync<T>(HttpClient client, string path, object patchData)
+        public static async Task<string> CreateAsync(HttpClient client, string path, string jsonData)
+        {
+            string id = null;
+            StringContent content = new StringContent(jsonData, Encoding.UTF8, MediaTypeNames.Application.Json);
+            HttpResponseMessage response = await client.PostAsync(path, content);
+            if (response.IsSuccessStatusCode)
+            {
+                HttpResponseHeaders headers = response.Headers;
+                if (headers.TryGetValues("OData-EntityId", out IEnumerable<string> values))
+                {
+                    return values.First<string>().Split("(")[1].Split(")")[0];
+                }
+            }
+            else
+            {
+                Console.WriteLine(response);
+                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+            }
+            return id;
+        }
+
+        public static async Task<T> PatchAsync<T>(HttpClient client, string path, string jsonData)
         {
             T obj = default;
-            StringContent content = new StringContent(JsonConvert.SerializeObject(patchData), Encoding.UTF8, MediaTypeNames.Application.Json);
+            StringContent content = new StringContent(jsonData, Encoding.UTF8, MediaTypeNames.Application.Json);
             HttpResponseMessage response = await client.PatchAsync(path, content);
             if (response.IsSuccessStatusCode)
             {
@@ -67,6 +96,20 @@ namespace WGCDynamics
                 return JsonConvert.DeserializeObject<T>(new StreamReader(responseStream).ReadToEnd());
             }
             return obj;
+        }
+
+        public static async Task<bool> DeleteAsync<T>(HttpClient client, string path)
+        {
+            HttpResponseMessage response = await client.DeleteAsync(path);
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            else {
+                Console.WriteLine(response);
+                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+            }
+            return false;
         }
     }
 }
