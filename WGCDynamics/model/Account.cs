@@ -82,6 +82,10 @@ namespace WGCDynamics.model
         public string description { get; set; }
         public bool? donotbulkemail { get; set; }
         public bool? donotbulkpostalmail { get; set; }
+        public string emailaddress1 { get; set; }
+        public string emailaddress2 { get; set; }
+        public string emailaddress3 { get; set; }
+        public string websiteurl { get; set; }
         public bool? donotemail { get; set; }
         public bool? donotfax { get; set; }
         public bool? donotphone { get; set; }
