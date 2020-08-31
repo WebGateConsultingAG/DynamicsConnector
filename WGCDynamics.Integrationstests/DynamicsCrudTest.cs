@@ -38,7 +38,7 @@ namespace DynamicsConnectorTest
             string AppSecret = (string)TestContext.Properties["APPLICATION_SECRET"];
             string Tenant = (string)TestContext.Properties["TENANT_NAME"];
             string Resource = (string)TestContext.Properties["RESOURCE"];
-            SystemUserId = (string)TestContext.Properties["SYSTEM_USERID"];
+            SystemUserId = (string)TestContext.Properties["SYSTEMUSERID"];
             connector = new DynamicsConnectorBuilder().
                 WithApplicationId(AppId).WithApplicationSecret(AppSecret).WithResource(Resource).WithTenant(Tenant).Build();
         }

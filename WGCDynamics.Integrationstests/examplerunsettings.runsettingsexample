@@ -9,6 +9,5 @@
     <Parameter name="CONTACTID" value="examplecontactid" />
     <Parameter name="ANSWER_FIRSTNAME" value="" />
     <Parameter name="ANSWER_LASTNAME" value="" />
-    <Parameter name="SYSTEM_USERID" value="systemuserid of your dynamics" />
   </TestRunParameters>
 </RunSettings>
