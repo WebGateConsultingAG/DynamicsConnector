@@ -95,6 +95,10 @@ namespace WGCDynamics
                 using Stream responseStream = await response.Content.ReadAsStreamAsync();
                 return JsonConvert.DeserializeObject<T>(new StreamReader(responseStream).ReadToEnd());
             }
+            else {
+                Console.WriteLine(response);
+                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+            }
             return obj;
         }
 
