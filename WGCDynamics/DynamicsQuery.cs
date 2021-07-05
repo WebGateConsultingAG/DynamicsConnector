@@ -113,24 +113,30 @@ namespace WGCDynamics
                 {
                     filterBuilder.Append(" " + filter.GlobalOperator + " ");
                 }
-                filterBuilder.Append(filter.Field + " " + filter.Operator + " " + GetFilterValue(filter.Value));
+                filterBuilder.Append($"{filter.Field } {filter.Operator} {GetFilterValue(filter.Value)}");
                 count++;
             }
             return filterBuilder.ToString();
         }
 
-        private object GetFilterValue(object value)
+        private string GetFilterValue(object value)
         {
-
             if (value is string)
             {
                 return "'" + value + "'";
             }
+            else if (value is bool)
+            {
+                return value.ToString().ToLower();
+            }
+            else if (value is null)
+            {
+                return "null";
+            }
             else
             {
-                return value;
+                return value.ToString();
             }
-
         }
 
         private string GetSelect(ICollection<string> Fields)
