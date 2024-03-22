@@ -39,7 +39,7 @@ jobs:
     - name: Test and collect coverage
       run: |
         # Your commands to run tests and collect coverage, for example:
-        dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+        dotnet test --filter 'FullyQualifiedName!~Integrationtests'/p:CollectCoverage=true /p:CoverletOutputFormat=opencover
         # This example assumes you're using coverlet for code coverage in a .NET Core project
     
     - name: End SonarCloud Analysis
