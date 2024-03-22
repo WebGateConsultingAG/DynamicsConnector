@@ -32,22 +32,22 @@ public class DynamicsConnector
     private readonly string resource;
     private readonly HttpClient client;
     private readonly IConfidentialClientApplication clientAuthApp;
-    private DateTimeOffset _tokenExpiresOn = DateTimeOffset.UtcNow.AddDays(-1);
+    private DateTimeOffset tokenExpiresOn = DateTimeOffset.UtcNow.AddDays(-1);
+    private string token;
     public DynamicsConnector(DynamicsConnectorBuilder builder)
     {
         resource = builder.Resource;
         string authority = $"https://login.microsoftonline.com/{builder.Tenant}";
         clientAuthApp = ConfidentialClientApplicationBuilder.Create(builder.ApplicationId).WithClientSecret(builder.ApplicationSecret).WithAuthority(authority).Build();
         client = new HttpClient { BaseAddress = new Uri(resource + builder.ApiPath) };
-        ReciveToken().GetAwaiter().GetResult();
     }
 
     public async Task<bool> ReciveToken()
     {
         var authResult = await clientAuthApp.AcquireTokenForClient(new[] { $"{resource}/.default" }).ExecuteAsync().ConfigureAwait(false);
         string token = authResult.AccessToken;
-        _tokenExpiresOn = authResult.ExpiresOn;
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        tokenExpiresOn = authResult.ExpiresOn;
+        this.token = token;
         return true;
     }
 
@@ -59,7 +59,7 @@ public class DynamicsConnector
     /// <returns>the client for usa</returns>
     public async Task<HttpClient> GetClientAsync()
     {
-        if (DateTimeOffset.UtcNow > _tokenExpiresOn)
+        if (DateTimeOffset.UtcNow > tokenExpiresOn)
         {
             await this.ReciveToken();
         }
@@ -98,6 +98,7 @@ public class DynamicsConnector
     {
         HttpClient client = await GetClientAsync();
         using HttpRequestMessage request = new(HttpMethod.Get, path);
+        InjectToken(request);
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
@@ -108,6 +109,12 @@ public class DynamicsConnector
             throw await BuildExcpetion("GET", path, response, "");
         }
     }
+
+    private void InjectToken(HttpRequestMessage request)
+    {
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
     public async Task<T> PostAsync<T>(DynamicsQuery query, object postData)
     {
         return await PostAsync<T>(query.GetPath(), postData);
@@ -118,6 +125,7 @@ public class DynamicsConnector
         StringContent content = new StringContent(payload, Encoding.UTF8, MEDIAJSON);
         HttpClient client = await GetClientAsync();
         using HttpRequestMessage request = new(HttpMethod.Post, path);
+        InjectToken(request);
         request.Content = content;
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -140,6 +148,7 @@ public class DynamicsConnector
         StringContent content = new StringContent(payload, Encoding.UTF8, MEDIAJSON);
         HttpClient client = await GetClientAsync();
         using HttpRequestMessage request = new(HttpMethod.Post, path);
+        InjectToken(request);
         request.Content = content;
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -172,6 +181,7 @@ public class DynamicsConnector
 
         StringContent content = new StringContent(jsonPayload, Encoding.UTF8, MEDIAJSON);
         using HttpRequestMessage request = new(HttpMethod.Patch, path);
+        InjectToken(request);
         request.Content = content;
         HttpClient client = await GetClientAsync();
         using HttpResponseMessage response = await client.SendAsync(request);
@@ -193,7 +203,7 @@ public class DynamicsConnector
     {
         HttpClient client = await GetClientAsync();
         using HttpRequestMessage request = new(HttpMethod.Delete, path);
-
+        InjectToken(request);
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
