@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  *
  */
-namespace WGCDynamics.model
+namespace WebGate.Dynamics.Model
 {
     #pragma warning disable IDE1006 // Benennungsstile
     public class DynamicsResponse<T>

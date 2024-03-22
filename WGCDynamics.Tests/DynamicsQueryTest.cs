@@ -17,8 +17,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using WGCDynamics;
-using WGCDynamics.model;
+using WebGate.Dynamics.Connector;
+using WebGate.Dynamics.Model;
+using WebGate.Dynamics.Util;
 
 namespace DynamicsConnectorUnitTest
 {
