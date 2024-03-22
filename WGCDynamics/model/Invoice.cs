@@ -24,9 +24,9 @@ namespace WebGate.Dynamics.Model
         public string customerid { get; set; }
         public string datedelivered { get; set; }
         public string description { get; set; }
-        public string discountamount { get; set; }
-        public string discountamount_base { get; set; }
-        public string discountpercentage { get; set; }
+        public decimal? discountamount { get; set; }
+        public decimal? discountamount_base { get; set; }
+        public decimal? discountpercentage { get; set; }
         public string duedate { get; set; }
         public string emailaddress { get; set; }
         public string entityimage { get; set; }
@@ -42,8 +42,8 @@ namespace WebGate.Dynamics.Model
         public string modifiedby { get; set; }
         public string modifiedon { get; set; }
         public string modifiedonbehalfby { get; set; }
-        public string msdyn_amountdue { get; set; }
-        public string msdyn_amountdue_base { get; set; }
+        public decimal? msdyn_amountdue { get; set; }
+        public decimal? msdyn_amountdue_base { get; set; }
         public string msdyn_invoicedate { get; set; }
         public string msdyn_ordertype { get; set; }
         public string name { get; set; }
@@ -80,18 +80,18 @@ namespace WebGate.Dynamics.Model
         public string statecode { get; set; }
         public string statuscode { get; set; }
         public string timezoneruleversionnumbe{ get; set; }
-        public string totalamount { get; set; }
-        public string totalamount_base { get; set; }
-        public string totalamountlessfreight { get; set; }
-        public string totalamountlessfreight_base { get; set; }
-        public string totaldiscountamount { get; set; }
-        public string totaldiscountamount_base { get; set; }
-        public string totallineitemamount { get; set; }
-        public string totallineitemamount_base { get; set; }
-        public string totallineitemdiscountamount { get; set; }
-        public string totallineitemdiscountamount_base { get; set; }
-        public string totaltax { get; set; }
-        public string totaltax_base { get; set; }
+        public decimal? totalamount { get; set; }
+        public decimal? totalamount_base { get; set; }
+        public decimal? totalamountlessfreight { get; set; }
+        public decimal? totalamountlessfreight_base { get; set; }
+        public decimal? totaldiscountamount { get; set; }
+        public decimal? totaldiscountamount_base { get; set; }
+        public decimal? totallineitemamount { get; set; }
+        public decimal? totallineitemamount_base { get; set; }
+        public decimal? totallineitemdiscountamount { get; set; }
+        public decimal? totallineitemdiscountamount_base { get; set; }
+        public decimal? totaltax { get; set; }
+        public decimal? totaltax_base { get; set; }
         public string transactioncurrencyid { get; set; }
         public string traversedpath { get; set; }
         public string utcconversiontimezonecode { get; set; }
