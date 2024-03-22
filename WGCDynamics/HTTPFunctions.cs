@@ -25,7 +25,7 @@ using System.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WGCDynamics
+namespace WebGate.Dynamics.Connector
 {
     public static class HttpFunctions
     {

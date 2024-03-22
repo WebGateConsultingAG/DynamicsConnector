@@ -1,4 +1,4 @@
-﻿namespace WGCDynamics.model
+﻿namespace WebGate.Dynamics.Model
 {
     public static class DynamicsAssociations
     {

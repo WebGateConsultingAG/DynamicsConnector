@@ -15,7 +15,7 @@
  *
  */
 
-namespace WGCDynamics
+namespace WebGate.Dynamics.Util
 {
     public static class DynamicsTables
     {

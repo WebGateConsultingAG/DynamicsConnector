@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WGCDynamics.model
+namespace WebGate.Dynamics.Model
 {
     #pragma warning disable IDE1006 // Naming Styles
     class Invoice

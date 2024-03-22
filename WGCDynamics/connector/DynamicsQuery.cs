@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace WGCDynamics
+namespace WebGate.Dynamics.Connector
 {
     public class DynamicsQuery
     {
