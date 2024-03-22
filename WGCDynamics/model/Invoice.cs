@@ -5,7 +5,7 @@ using System.Text;
 namespace WebGate.Dynamics.Model
 {
     #pragma warning disable IDE1006 // Naming Styles
-    class Invoice
+    public class Invoice
     {
         public string billto_city { get; set; }
         public string billto_composite { get; set; }
