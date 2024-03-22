@@ -15,106 +15,202 @@
  *
  */
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
+using Newtonsoft.Json;
+using WebGate.Dynamics.Util;
 
-namespace WebGate.Dynamics.Connector
+namespace WebGate.Dynamics.Connector;
+public class DynamicsConnector
 {
-    public class DynamicsConnector
+    public static readonly string MEDIAJSON = "application/json";
+    private readonly string resource;
+    private readonly HttpClient client;
+    private readonly IConfidentialClientApplication clientAuthApp;
+    private DateTimeOffset _tokenExpiresOn = DateTimeOffset.UtcNow.AddDays(-1);
+    public DynamicsConnector(DynamicsConnectorBuilder builder)
     {
-        private static readonly string APIPATH = "/api/data/v9.2/";
-        private readonly string resource;
-        private readonly string tenant;
-        private readonly string applicationSecret;
-        private readonly string applicationId;
-        private readonly HttpClient client;
-        private readonly IConfidentialClientApplication clientAuthApp;
-        private DateTimeOffset _tokenExpiresOn = DateTimeOffset.UtcNow.AddDays(-1);
-        private DynamicsConnector(DynamicsConnectorBuilder builder) {
-            resource = builder.Resource;
-            tenant = builder.Tenant;
-            string authority = $"https://login.microsoftonline.com/{builder.Tenant}";
+        resource = builder.Resource;
+        string authority = $"https://login.microsoftonline.com/{builder.Tenant}";
+        clientAuthApp = ConfidentialClientApplicationBuilder.Create(builder.ApplicationId).WithClientSecret(builder.ApplicationSecret).WithAuthority(authority).Build();
+        client = new HttpClient { BaseAddress = new Uri(resource + builder.ApiPath) };
+        ReciveToken().GetAwaiter().GetResult();
+    }
 
-            clientAuthApp = ConfidentialClientApplicationBuilder.Create(builder.ApplicationId).WithClientSecret(builder.ApplicationSecret).WithAuthority(authority).Build();
-            
-            applicationSecret = builder.ApplicationSecret;
-            applicationId = builder.ApplicationId;
-            client = new HttpClient { BaseAddress = new Uri(resource + APIPATH) };
-            ReciveToken().GetAwaiter().GetResult();
+    public async Task<bool> ReciveToken()
+    {
+        var authResult = await clientAuthApp.AcquireTokenForClient(new[] { $"{resource}/.default" }).ExecuteAsync().ConfigureAwait(false);
+        string token = authResult.AccessToken;
+        _tokenExpiresOn = authResult.ExpiresOn;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return true;
+    }
+
+
+
+    /// <summary>
+    /// full functionaly dynamics client. 
+    /// </summary>
+    /// <returns>the client for usa</returns>
+    public async Task<HttpClient> GetClientAsync()
+    {
+        if (DateTimeOffset.UtcNow > _tokenExpiresOn)
+        {
+            await this.ReciveToken();
+        }
+        return client;
+    }
+
+    public async Task<IEnumerable<T>> GetAllAsync<T>(DynamicsQuery query)
+    {
+        return await GetAllAsync<T>(query.GetPath());
+    }
+    public async Task<IEnumerable<T>> GetAllAsync<T>(string path)
+    {
+        IEnumerable<T> result = new List<T>();
+        string pathToProcess = path;
+        while (pathToProcess != null)
+        {
+            DynamicsListResponse<List<T>> response = await GetAsync<DynamicsListResponse<List<T>>>(pathToProcess);
+            pathToProcess = null;
+            if (response != null)
+            {
+                result = result.Concat(response.value);
+                if (!string.IsNullOrEmpty(response.NextLink))
+                {
+                    pathToProcess = response.NextLink;
+                }
+            }
+        }
+        return result;
+    }
+    public async Task<T> GetAsync<T>(DynamicsQuery query)
+    {
+        return await GetAsync<T>(query.GetPath());
+    }
+
+    public async Task<T> GetAsync<T>(string path)
+    {
+        HttpClient client = await GetClientAsync();
+        using HttpRequestMessage request = new(HttpMethod.Get, path);
+        using HttpResponseMessage response = await client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            return await BuildResultObject<T>(response);
+        }
+        else
+        {
+            throw await BuildExcpetion("GET", path, response, "");
+        }
+    }
+    public async Task<T> PostAsync<T>(DynamicsQuery query, object postData)
+    {
+        return await PostAsync<T>(query.GetPath(), postData);
+    }
+    public async Task<T> PostAsync<T>(string path, object postData)
+    {
+        string payload = JsonConvert.SerializeObject(postData, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+        StringContent content = new StringContent(payload, Encoding.UTF8, MEDIAJSON);
+        HttpClient client = await GetClientAsync();
+        using HttpRequestMessage request = new(HttpMethod.Post, path);
+        request.Content = content;
+        using HttpResponseMessage response = await client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            return await BuildResultObject<T>(response);
+        }
+        else
+        {
+            throw await BuildExcpetion("POST", path, response, payload);
+        }
+    }
+    public async Task<string> CreateAsync(DynamicsQuery query, object postData)
+    {
+        return await CreateAsync(query.GetPath(), postData);
+    }
+    public async Task<string> CreateAsync(string path, object postData)
+    {
+        string payload = JsonConvert.SerializeObject(postData, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+        StringContent content = new StringContent(payload, Encoding.UTF8, MEDIAJSON);
+        HttpClient client = await GetClientAsync();
+        using HttpRequestMessage request = new(HttpMethod.Post, path);
+        request.Content = content;
+        using HttpResponseMessage response = await client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            HttpResponseHeaders headers = response.Headers;
+            if (headers.TryGetValues("OData-EntityId", out IEnumerable<string> values))
+            {
+                return values.First<string>().Split('(')[1].Split(')')[0];
+            }
+            return null;
+        }
+        else
+        {
+            throw await BuildExcpetion("POST", path, response, payload);
+        }
+    }
+    public async Task<T> PatchAsync<T>(DynamicsQuery query, object postData)
+    {
+        return await PatchAsync<T>(query.GetPath(), postData);
+    }
+    public async Task<T> PatchAsync<T>(string path, object postData)
+    {
+        string payload = JsonConvert.SerializeObject(postData, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Include });
+
+        return await this.PatchAsync<T>(path, payload);
+
+    }
+    public async Task<T> PatchAsync<T>(string path, string jsonPayload)
+    {
+
+        StringContent content = new StringContent(jsonPayload, Encoding.UTF8, MEDIAJSON);
+        using HttpRequestMessage request = new(HttpMethod.Patch, path);
+        request.Content = content;
+        HttpClient client = await GetClientAsync();
+        using HttpResponseMessage response = await client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            return await BuildResultObject<T>(response);
+        }
+        else
+        {
+            throw await BuildExcpetion("PATCH", path, response, jsonPayload);
         }
 
-        public async Task<bool> ReciveToken()
+    }
+    public async Task<bool> DeleteAsync(DynamicsQuery query)
+    {
+        return await DeleteAsync(query.GetPath());
+    }
+    public async Task<bool> DeleteAsync(string path)
+    {
+        HttpClient client = await GetClientAsync();
+        using HttpRequestMessage request = new(HttpMethod.Delete, path);
+
+        using HttpResponseMessage response = await client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
         {
-            var authResult = await clientAuthApp.AcquireTokenForClient(new[] { $"{resource}/.default" }).ExecuteAsync().ConfigureAwait(false);
-            string token = authResult.AccessToken;
-            _tokenExpiresOn = authResult.ExpiresOn;
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return true;
         }
+        return false;
+    }
 
-        /// <summary>
-        /// full functionaly dynamics client. 
-        /// </summary>
-        /// <returns>the client for usa</returns>
-        public HttpClient GetClient() {
-            return client;
-        }
+    private static async Task<T> BuildResultObject<T>(HttpResponseMessage response)
+    {
+        string result = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<T>(result);
+    }
 
-        /// <summary>
-        /// Builder for the Dynamics Connector
-        /// </summary>
-        public class DynamicsConnectorBuilder
-        {
-            public string Resource { get; set; }
-            public string ApplicationId { get; set; }
-            public string Tenant { get; set; }
-            public string ApplicationSecret { get; set; }
-
-            /// <summary>
-            /// Set the Url to your Dynamics Instance
-            /// </summary>
-            /// <param name="resource">e.g. https://yourInstanceName.crm.dynamics.com</param>
-            public DynamicsConnectorBuilder WithResource(string resource)
-            {
-                Resource = resource;
-                return this;
-            }
-            /// <summary>
-            /// Set the Dynamics Application id
-            /// </summary>
-            /// <param name="applicationId">e.g.: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</param>
-            public DynamicsConnectorBuilder WithApplicationId(string applicationId) {
-                ApplicationId = applicationId;
-                return this;
-            }
-
-            /// <summary>
-            /// Set the Login Page for your Dynamics
-            /// </summary>
-            /// <param name="tenant">e.g.https://login.windows.net/yourdomain.com </param>
-            public DynamicsConnectorBuilder WithTenant(string tenant) {
-                Tenant = tenant;
-                return this;
-            }
-
-            /// <summary>
-            /// Set the App Secret
-            /// </summary>
-            /// <param name="appSecret"></param>
-            /// <returns></returns>
-            public DynamicsConnectorBuilder WithApplicationSecret(string appSecret) {
-                ApplicationSecret = appSecret;
-                return this;
-            }
-            /// <summary>
-            /// Finaly build the Dynamics Connector
-            /// </summary>
-            /// <returns></returns>
-            public DynamicsConnector Build() {
-                return new DynamicsConnector(this);
-            }
-        }
+    private static async Task<Exception> BuildExcpetion(string methode, string path, HttpResponseMessage response, string payload)
+    {
+        string errorContent = await response.Content.ReadAsStringAsync();
+        throw new Exception($"Error during {methode} - Path: {path} stateCode: {response.StatusCode}  message: {response.ReasonPhrase} errorContent: {errorContent} |Data: {payload}");
     }
 }

@@ -18,8 +18,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebGate.Dynamics.Connector;
 using WebGate.Dynamics.Model;
 using WebGate.Dynamics.Util;
-using static WebGate.Dynamics.Connector.DynamicsConnector;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
@@ -45,7 +43,7 @@ namespace DynamicsConnectorTest
         }
 
         [TestMethod]
-        public void CrudAccount()
+        public async System.Threading.Tasks.Task  CrudAccount()
         {
             DynamicsQuery query = new DynamicsQuery
             {
@@ -56,13 +54,11 @@ namespace DynamicsConnectorTest
                 name = "CrudTest ���"
             }, new JsonSerializer { NullValueHandling = NullValueHandling.Ignore });
             account["ownerid@odata.bind"] = "/systemusers("+ SystemUserId + ")";
-            Task <string> task = HttpFunctions.CreateAsync(connector.GetClient(), query.GetPath(), JsonConvert.SerializeObject(account));
-            string answer = task.GetAwaiter().GetResult();
-            Assert.IsTrue(answer != null);
-            query.Key = answer;        
-            Task<bool> task2 = HttpFunctions.DeleteAsync<bool>(connector.GetClient(), query.GetPath());
-            bool boolAnswer = task2.GetAwaiter().GetResult();
-            Assert.IsTrue(boolAnswer);
+            string accountId = await connector.CreateAsync(query,account);
+            Assert.IsTrue(accountId != null);
+            query.Key = accountId;
+            var isDeleted = await connector.DeleteAsync(query);       
+            Assert.IsTrue(isDeleted);
         }
     }
 }

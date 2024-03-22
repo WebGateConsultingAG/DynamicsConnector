@@ -48,20 +48,19 @@ namespace DynamicsConnectorTest
 
 
         [TestMethod]
-        public void GetList()
+        public async System.Threading.Tasks.Task GetList()
         {
             DynamicsQuery query = new DynamicsQuery
             {
                 Table = DynamicsTables.Organization
             };
-            Task<DynamicsResponse<ICollection<Organization>>> task = HttpFunctions.GetAsync<DynamicsResponse<ICollection<Organization>>>(connector.GetClient(), query.GetPath());
-            DynamicsResponse<ICollection<Organization>>  answer = task.GetAwaiter().GetResult();
-            Assert.IsTrue(answer != null);
-            Assert.IsTrue(answer.value.Count > 0);
+            IEnumerable<Organization> organisations = await connector.GetAllAsync<Organization>(query);
+            Assert.IsTrue(organisations != null);
+            Assert.IsTrue(organisations.ToList().Count > 0);
         }
 
         [TestMethod]
-        public void GetFilteredList()
+        public async System.Threading.Tasks.Task GetFilteredList()
         {
             DynamicsQuery query = new DynamicsQuery()
             {
@@ -82,44 +81,41 @@ namespace DynamicsConnectorTest
                     }
                 }
             };
-
-            Task<DynamicsResponse<ICollection<SystemUser>>> task = HttpFunctions.GetAsync<DynamicsResponse<ICollection<SystemUser>>>(connector.GetClient(), query.GetPath());
-            DynamicsResponse<ICollection<SystemUser>> answer = task.GetAwaiter().GetResult();
-            Assert.IsTrue(answer != null);
-            Assert.IsTrue(answer.value.Count > 0);
-            Assert.IsTrue(answer.value.First().firstname.Equals(FirstNameAnswer) && answer.value.First().lastname.Equals(LastNameAnswer));
+            IEnumerable<SystemUser> allUsersFound = await connector.GetAllAsync<SystemUser>(query);
+            Assert.IsTrue(allUsersFound != null);
+            var allUserList = allUsersFound.ToList();
+            Assert.IsTrue(allUserList.Count > 0);
+            Assert.IsTrue(allUserList.First().firstname.Equals(FirstNameAnswer) && allUserList.First().lastname.Equals(LastNameAnswer));
         }
 
         [TestMethod]
-        public void GetLimitedList()
+        public async System.Threading.Tasks.Task GetLimitedList()
         {
             DynamicsQuery query = new DynamicsQuery
             {
                 Table = DynamicsTables.Systemuser,
                 Top = 5
             };
-            Task<DynamicsResponse<ICollection<SystemUser>>> task = HttpFunctions.GetAsync<DynamicsResponse<ICollection<SystemUser>>>(connector.GetClient(), query.GetPath());
-            DynamicsResponse<ICollection<SystemUser>> answer = task.GetAwaiter().GetResult();
-            Assert.IsTrue(answer != null);
-            Assert.IsTrue(answer.value.Count == 5);
+            IEnumerable<SystemUser> fiveUsersFound = await connector.GetAllAsync<SystemUser>(query);
+            Assert.IsTrue(fiveUsersFound != null);
+            Assert.IsTrue(fiveUsersFound.ToList().Count == 5);
         }
 
         [TestMethod]
-        public void GetDataById()
+        public async System.Threading.Tasks.Task GetDataById()
         {
             DynamicsQuery query = new DynamicsQuery
             {
                 Table = DynamicsTables.Systemuser,
                 Key = (string)TestContext.Properties["SYSTEMUSERID"]
             };
-            Task<SystemUser> task = HttpFunctions.GetAsync<SystemUser>(connector.GetClient(), query.GetPath());
-            SystemUser answer = task.GetAwaiter().GetResult();
-            Assert.IsTrue(answer != null);
-            Assert.IsTrue(answer.firstname.Equals(FirstNameAnswer));
+            var systemUser = await connector.GetAsync<SystemUser>(query);
+            Assert.IsTrue(systemUser != null);
+            Assert.IsTrue(systemUser.firstname.Equals(FirstNameAnswer));
         }
 
         [TestMethod]
-        public void GetDataByIdAndExpand()
+        public async System.Threading.Tasks.Task GetDataByIdAndExpand()
         {
             DynamicsQuery query = new DynamicsQuery
             {
@@ -135,12 +131,11 @@ namespace DynamicsConnectorTest
                         nameof(SystemUser.firstname)
                     }
                 }
-            };            
-            Task<Contact> task = HttpFunctions.GetAsync<Contact>(connector.GetClient(), query.GetPath());
-            Contact answer = task.GetAwaiter().GetResult();         
-            Assert.IsTrue(answer != null);
-            Assert.IsTrue(answer.firstname.Equals(FirstNameAnswer));
-            Assert.IsTrue(answer.owninguser.firstname.Equals(FirstNameAnswer));
+            };
+            var contact = await connector.GetAsync<Contact>(query);            
+            Assert.IsTrue(contact != null);
+            Assert.IsTrue(contact.firstname.Equals(FirstNameAnswer));
+            Assert.IsTrue(contact.owninguser.firstname.Equals(FirstNameAnswer));
         }
     }
 }
