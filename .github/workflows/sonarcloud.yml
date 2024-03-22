@@ -30,7 +30,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed for automatic PR decoration
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        dotnet sonarscanner begin /k:"WGCDynamics" /o:"webgateconsultingag_azure" /d:sonar.login="${SONAR_TOKEN}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.exclusions="**/Migrations/**" /d:sonar.coverage.exclusions="**Tests*.cs"
+        dotnet sonarscanner begin /k:"WGCDynamics" /o:"webgateconsultingag-azure" /d:sonar.login="${SONAR_TOKEN}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.exclusions="**/Migrations/**" /d:sonar.coverage.exclusions="**Tests*.cs"
         # Adjust the above command with your project key, organization, and any other relevant parameters for your project
     
     - name: Build
