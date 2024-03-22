@@ -15,9 +15,10 @@
  *
  */
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WGCDynamics;
-using WGCDynamics.model;
-using static WGCDynamics.DynamicsConnector;
+using WebGate.Dynamics.Connector;
+using WebGate.Dynamics.Model;
+using WebGate.Dynamics.Util;
+using static WebGate.Dynamics.Connector.DynamicsConnector;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
@@ -52,7 +53,7 @@ namespace DynamicsConnectorTest
             };
             JObject account = JObject.FromObject(new Account()
             {
-                name = "CrudTest üäö"
+                name = "CrudTest ï¿½ï¿½ï¿½"
             }, new JsonSerializer { NullValueHandling = NullValueHandling.Ignore });
             account["ownerid@odata.bind"] = "/systemusers("+ SystemUserId + ")";
             Task <string> task = HttpFunctions.CreateAsync(connector.GetClient(), query.GetPath(), JsonConvert.SerializeObject(account));

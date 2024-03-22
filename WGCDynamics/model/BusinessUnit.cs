@@ -16,7 +16,7 @@
  */
 using System;
 
-namespace WGCDynamics.model
+namespace WebGate.Dynamics.Model
 {
     public class BusinessUnit
     {

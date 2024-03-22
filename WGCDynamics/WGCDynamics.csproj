@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Mirko Eberlein</Authors>
     <Company>WebGate Consulting AG</Company>
     <Description>Class Libary to have quick Access to Microsoft Dynamics Data. WGCDynamics gives you the ability to create a Connector and Fetch Date from or write Data into Dynamics.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>WebGate Consulting AG</Copyright>
-    <Version>1.0.0.00004</Version>
+    <Version>2.0.0-alpha1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,8 +16,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.8" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Azure.Identity" Version="1.8.2" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.53.0" />
   </ItemGroup>
 
 </Project>

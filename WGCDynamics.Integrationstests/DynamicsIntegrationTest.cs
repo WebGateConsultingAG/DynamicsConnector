@@ -15,10 +15,11 @@
  *
  */
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WGCDynamics;
-using WGCDynamics.model;
+using WebGate.Dynamics.Connector;
+using WebGate.Dynamics.Model;
+using WebGate.Dynamics.Util;
 using System.Collections.Generic;
-using static WGCDynamics.DynamicsConnector;
+using static WebGate.Dynamics.Connector.DynamicsConnector;
 using System.Threading.Tasks;
 using System.Linq;
 

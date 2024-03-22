@@ -15,7 +15,7 @@
  *
  */
 
-namespace WGCDynamics
+namespace WebGate.Dynamics.Connector
 {
     public static class FilterOperator
     {

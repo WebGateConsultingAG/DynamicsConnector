@@ -18,21 +18,27 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Identity.Client;
 
-namespace WGCDynamics
+namespace WebGate.Dynamics.Connector
 {
     public class DynamicsConnector
     {
-        private static readonly string APIPATH = "/api/data/v9.0/";
+        private static readonly string APIPATH = "/api/data/v9.2/";
         private readonly string resource;
         private readonly string tenant;
         private readonly string applicationSecret;
         private readonly string applicationId;
         private readonly HttpClient client;
+        private readonly IConfidentialClientApplication clientAuthApp;
+        private DateTimeOffset _tokenExpiresOn = DateTimeOffset.UtcNow.AddDays(-1);
         private DynamicsConnector(DynamicsConnectorBuilder builder) {
             resource = builder.Resource;
             tenant = builder.Tenant;
+            string authority = $"https://login.microsoftonline.com/{builder.Tenant}";
+
+            clientAuthApp = ConfidentialClientApplicationBuilder.Create(builder.ApplicationId).WithClientSecret(builder.ApplicationSecret).WithAuthority(authority).Build();
+            
             applicationSecret = builder.ApplicationSecret;
             applicationId = builder.ApplicationId;
             client = new HttpClient { BaseAddress = new Uri(resource + APIPATH) };
@@ -41,10 +47,9 @@ namespace WGCDynamics
 
         public async Task<bool> ReciveToken()
         {
-            ClientCredential credentials = new ClientCredential(applicationId, applicationSecret);
-            var authContext = new AuthenticationContext(tenant);
-            var result = await authContext.AcquireTokenAsync(resource, credentials);
-            string token = result.AccessToken;
+            var authResult = await clientAuthApp.AcquireTokenForClient(new[] { $"{resource}/.default" }).ExecuteAsync().ConfigureAwait(false);
+            string token = authResult.AccessToken;
+            _tokenExpiresOn = authResult.ExpiresOn;
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return true;
         }
