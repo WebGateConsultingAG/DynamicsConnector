@@ -35,11 +35,21 @@ jobs:
     
     - name: Build
       run: dotnet build
+
+    - name: Create test.runsettings
+      run: |
+        cat > WGCDynamics.Integrationstests/test.runsettings <<EOF
+        <RunSettings>
+          <TestRunParameters>
+          ${{ secrets.TEST_PARAMETER }}
+          </TestRunParameters>
+        </RunSettings>
+        EOF
     
     - name: Test and collect coverage
       run: |
         # Your commands to run tests and collect coverage, for example:
-        dotnet test --filter 'FullyQualifiedName!~Integrationtests'/p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+        dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
         # This example assumes you're using coverlet for code coverage in a .NET Core project
     
     - name: End SonarCloud Analysis
