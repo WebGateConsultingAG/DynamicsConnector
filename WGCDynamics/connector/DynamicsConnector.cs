@@ -29,25 +29,25 @@ namespace WebGate.Dynamics.Connector;
 public class DynamicsConnector
 {
     public static readonly string MEDIAJSON = "application/json";
-    private readonly string resource;
-    private readonly HttpClient client;
-    private readonly IConfidentialClientApplication clientAuthApp;
-    private DateTimeOffset tokenExpiresOn = DateTimeOffset.UtcNow.AddDays(-1);
-    private string token;
+    private readonly string _resource;
+    private readonly HttpClient _client;
+    private readonly IConfidentialClientApplication _clientAuthApp;
+    private DateTimeOffset _tokenExpiresOn = DateTimeOffset.UtcNow.AddDays(-1);
+    private string _token;
     public DynamicsConnector(DynamicsConnectorBuilder builder)
     {
-        resource = builder.Resource;
+        _resource = builder.Resource;
         string authority = $"https://login.microsoftonline.com/{builder.Tenant}";
-        clientAuthApp = ConfidentialClientApplicationBuilder.Create(builder.ApplicationId).WithClientSecret(builder.ApplicationSecret).WithAuthority(authority).Build();
-        client = new HttpClient { BaseAddress = new Uri(resource + builder.ApiPath) };
+        _clientAuthApp = ConfidentialClientApplicationBuilder.Create(builder.ApplicationId).WithClientSecret(builder.ApplicationSecret).WithAuthority(authority).Build();
+        _client = new HttpClient { BaseAddress = new Uri(_resource + builder.ApiPath) };
     }
 
     public async Task<bool> ReciveToken()
     {
-        var authResult = await clientAuthApp.AcquireTokenForClient(new[] { $"{resource}/.default" }).ExecuteAsync().ConfigureAwait(false);
+        var authResult = await _clientAuthApp.AcquireTokenForClient(new[] { $"{_resource}/.default" }).ExecuteAsync().ConfigureAwait(false);
         string token = authResult.AccessToken;
-        tokenExpiresOn = authResult.ExpiresOn;
-        this.token = token;
+        _tokenExpiresOn = authResult.ExpiresOn;
+        _token = token;
         return true;
     }
 
@@ -59,11 +59,11 @@ public class DynamicsConnector
     /// <returns>the client for usa</returns>
     public async Task<HttpClient> GetClientAsync()
     {
-        if (DateTimeOffset.UtcNow > tokenExpiresOn)
+        if (DateTimeOffset.UtcNow > _tokenExpiresOn)
         {
             await this.ReciveToken();
         }
-        return client;
+        return _client;
     }
 
     public async Task<IEnumerable<T>> GetAllAsync<T>(DynamicsQuery query)
@@ -112,7 +112,7 @@ public class DynamicsConnector
 
     private void InjectToken(HttpRequestMessage request)
     {
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
     }
 
     public async Task<T> PostAsync<T>(DynamicsQuery query, object postData)
