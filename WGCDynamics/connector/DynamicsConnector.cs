@@ -94,6 +94,12 @@ public class DynamicsConnector
         return await GetAsync<T>(query.GetPath());
     }
 
+    public HttpRequestMessage BuildRequestMessage(HttpMethod method, string path) {
+        HttpRequestMessage request = new(method, path);
+        InjectToken(request);
+        return request;
+    }
+
     public async Task<T> GetAsync<T>(string path)
     {
         HttpClient client = await GetClientAsync();
