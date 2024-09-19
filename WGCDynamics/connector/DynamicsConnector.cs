@@ -94,7 +94,9 @@ public class DynamicsConnector
         return await GetAsync<T>(query.GetPath());
     }
 
-    public HttpRequestMessage BuildRequestMessage(HttpMethod method, string path) {
+
+    public HttpRequestMessage BuildRequestMessage(HttpMethod method, string path)
+    {
         HttpRequestMessage request = new(method, path);
         InjectToken(request);
         return request;
@@ -103,8 +105,7 @@ public class DynamicsConnector
     public async Task<T> GetAsync<T>(string path)
     {
         HttpClient client = await GetClientAsync();
-        using HttpRequestMessage request = new(HttpMethod.Get, path);
-        InjectToken(request);
+        using var request = BuildRequestMessage(HttpMethod.Get, path);
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
@@ -130,8 +131,7 @@ public class DynamicsConnector
         string payload = JsonConvert.SerializeObject(postData, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
         StringContent content = new StringContent(payload, Encoding.UTF8, MEDIAJSON);
         HttpClient client = await GetClientAsync();
-        using HttpRequestMessage request = new(HttpMethod.Post, path);
-        InjectToken(request);
+        using var request = BuildRequestMessage(HttpMethod.Post, path);
         request.Content = content;
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -153,8 +153,7 @@ public class DynamicsConnector
 
         StringContent content = new StringContent(payload, Encoding.UTF8, MEDIAJSON);
         HttpClient client = await GetClientAsync();
-        using HttpRequestMessage request = new(HttpMethod.Post, path);
-        InjectToken(request);
+        using var request = BuildRequestMessage(HttpMethod.Post, path);
         request.Content = content;
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -186,10 +185,9 @@ public class DynamicsConnector
     {
 
         StringContent content = new StringContent(jsonPayload, Encoding.UTF8, MEDIAJSON);
-        using HttpRequestMessage request = new(HttpMethod.Patch, path);
-        InjectToken(request);
-        request.Content = content;
         HttpClient client = await GetClientAsync();
+        using var request = BuildRequestMessage(HttpMethod.Patch, path);
+        request.Content = content;
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
@@ -201,6 +199,35 @@ public class DynamicsConnector
         }
 
     }
+    public async Task PatchAsync(DynamicsQuery query, object postData)
+    {
+        await PatchAsync(query.GetPath(), postData);
+    }
+    public async Task PatchAsync(string path, object postData)
+    {
+        string payload = JsonConvert.SerializeObject(postData, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Include });
+
+        await this.PatchAsync(path, payload);
+
+    }
+    public async Task PatchAsync(string path, string jsonPayload)
+    {
+
+        StringContent content = new StringContent(jsonPayload, Encoding.UTF8, MEDIAJSON);
+        HttpClient client = await GetClientAsync();
+        using var request = BuildRequestMessage(HttpMethod.Patch, path);
+        request.Content = content;
+        using HttpResponseMessage response = await client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+        else
+        {
+            throw await BuildExcpetion("PATCH", path, response, jsonPayload);
+        }
+    }
+
     public async Task<bool> DeleteAsync(DynamicsQuery query)
     {
         return await DeleteAsync(query.GetPath());
@@ -208,8 +235,7 @@ public class DynamicsConnector
     public async Task<bool> DeleteAsync(string path)
     {
         HttpClient client = await GetClientAsync();
-        using HttpRequestMessage request = new(HttpMethod.Delete, path);
-        InjectToken(request);
+        using var request = BuildRequestMessage(HttpMethod.Delete, path);
         using HttpResponseMessage response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
